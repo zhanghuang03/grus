@@ -1,5 +1,5 @@
 #### 项目介绍
-grus【主要针对离线任务调度场景】A lightweight distributed task scheduling framework.（分布式任务调度平台XXL-JOB）
+grus【主要针对离线任务调度场景】A lightweight distributed task scheduling framework.（基于“分布式任务调度平台XXL-JOB”二次开发）
 
 
 #### Original project

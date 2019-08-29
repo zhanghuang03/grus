@@ -32,5 +32,5 @@ Now, it's already open source, and many companies use it in production environme
 
 ##### 调度日志列表
 新增“待运行”状态，当加任务添加上游任务依赖后，等到所依赖的任务最后一次运行的状态为“成功”后本任务才会开始运行，如果上游任务经重试后还是失败，需手动执行至成功后本任务才会继续运行。
-![调度任务运行状态](https://raw.githubusercontent.com/wiki/zhanghuang03/grus/images/调度日志列表.png "调度任务运行状态")
+![调度任务运行状态](https://raw.githubusercontent.com/wiki/zhanghuang03/grus/images/调度任务运行状态.png "调度任务运行状态")
 

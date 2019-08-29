@@ -1,5 +1,5 @@
 #### 项目介绍
-grus【主要针对离线任务调度场景】A lightweight distributed task scheduling framework.（基于“分布式任务调度平台XXL-JOB”二次开发）
+grus【XXL-JOB】,主要针对离线任务调度场景（基于“<a href="https://github.com/xuxueli/xxl-job" target="_blank">分布式任务调度平台XXL-JOB</a>”二次开发）
 
 
 #### Original project
@@ -10,6 +10,15 @@ XXL-JOB是一个轻量级分布式任务调度平台，其核心设计目标是�
 XXL-JOB is a lightweight distributed task scheduling framework. 
 It's core design goal is to develop quickly and learn simple, lightweight, and easy to expand. 
 Now, it's already open source, and many companies use it in production environments, real "out-of-the-box".
+
+#### Grus【XXL-JOB】主要区别于XXL-JOB
+    （1）
+    
+    （2）选中节点时，突出当前节点以及上下游路径
+    
+    （3）基于bootstrap的右键菜单
+    
+    （4）样式调整
 
 #### Grus功能图示
 

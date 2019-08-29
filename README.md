@@ -1,5 +1,5 @@
 #### 项目介绍
-grus【XXL-JOB】,主要针对离线任务调度场景（基于“<a href="https://github.com/xuxueli/xxl-job" target="_blank">分布式任务调度平台XXL-JOB</a>”二次开发）
+grus【XXL-JOB】,主要针对离线任务调度场景（基于“<a href="https://github.com/xuxueli/xxl-job" target='_blank'>分布式任务调度平台XXL-JOB</a>”二次开发）
 
 
 #### Original project

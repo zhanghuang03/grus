@@ -50,7 +50,7 @@ Now, it's already open source, and many companies use it in production environme
 ![调度任务运行状态](https://raw.githubusercontent.com/wiki/zhanghuang03/grus/images/调度任务运行状态.png "调度任务运行状态")
 
 #### 调度数据库初始化SQL脚本
-位置为:/doc/db/tables_xxl_job.sql
+位置为:<a href="https://github.com/zhanghuang03/grus/blob/master/doc/db/tables_xxl_job.sql" target="_blank">/grus/doc/db/tables_xxl_job.sql</a>
 
 #### TODO LIST
     （1）被依赖中的任务不能删除

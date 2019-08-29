@@ -12,5 +12,5 @@ It's core design goal is to develop quickly and learn simple, lightweight, and e
 Now, it's already open source, and many companies use it in production environments, real "out-of-the-box".
 
 #### Grus功能图示
-#####任务列表
+##### 任务列表
 ![任务列表](https://raw.githubusercontent.com/wiki/zhanghuang03/grus/images/任务列表.png "任务列表")

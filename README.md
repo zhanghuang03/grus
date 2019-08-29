@@ -16,7 +16,7 @@ Now, it's already open source, and many companies use it in production environme
     
     （2）Grus任务运行时不判断超时时间，不管任务运行多久，不因超时kill掉，XXL-JOB有超时时间限制，必须手动传入运行时间，默认0时会因任务运行时间长些而kill掉。
     
-    （3）Grus任务依赖是监控上游任务当日最后一次运行的状态判断本任务是等待执行还是开始执行（注：必须是触发任务才生效，手动执行任务不生效），XXL-JOB任务依赖是主动触发一次子任务的执行。
+    （3）Grus任务依赖是监控上游任务当日最后一次运行的状态判断本任务是等待执行还是开始执行（注：必须是Cron方式触发的任务才生效），XXL-JOB任务依赖是主动触发一次子任务的执行。
     
     （4）【操作界面】Grus已支持任务依赖选择器
     
@@ -55,7 +55,7 @@ Now, it's already open source, and many companies use it in production environme
 #### TODO LIST
     （1）被依赖中的任务不能删除
     
-    （2）增加“重跑功能”，以便非触发任务也可以使任务依赖生效。
+    （2）增加“重跑功能”，以便非Cron方式触发的任务也可以使任务依赖生效。
     
     （3）增加检测执行器上任务存活机制，在执行器down掉重启后，调度中心对其任务状态做出修改。
     

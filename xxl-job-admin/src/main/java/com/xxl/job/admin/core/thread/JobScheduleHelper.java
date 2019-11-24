@@ -49,17 +49,20 @@ public class JobScheduleHelper {
                 }
                 logger.info(">>>>>>>>> init xxl-job admin scheduler success.");
 
-                Connection conn = null;
                 while (!scheduleThreadToStop) {
 
                     // Scan Job
                     long start = System.currentTimeMillis();
+
+                    Connection conn = null;
+                    Boolean connAutoCommit = null;
                     PreparedStatement preparedStatement = null;
+
                     boolean preReadSuc = true;
                     try {
-                        if (conn==null || conn.isClosed()) {
-                            conn = XxlJobAdminConfig.getAdminConfig().getDataSource().getConnection();
-                        }
+
+                        conn = XxlJobAdminConfig.getAdminConfig().getDataSource().getConnection();
+                        connAutoCommit = conn.getAutoCommit();
                         conn.setAutoCommit(false);
 
                         preparedStatement = conn.prepareStatement(  "select * from xxl_job_lock where lock_name = 'schedule_lock' for update" );
@@ -76,7 +79,7 @@ public class JobScheduleHelper {
 
                                 // 时间轮刻度计算
                                 if (nowTime > jobInfo.getTriggerNextTime() + PRE_READ_MS) {
-                                    // 过期超5s：本地忽略，当前时间开始计算下次触发时间
+                                    //  2.1、过期超5s：本地忽略，当前时间开始计算下次触发时间
 
                                     // fresh next
                                     Date nextValidTime = new CronExpression(jobInfo.getJobCron()).getNextValidTimeAfter(new Date());
@@ -90,7 +93,7 @@ public class JobScheduleHelper {
                                     }
 
                                 } else if (nowTime > jobInfo.getTriggerNextTime()) {
-                                    // 过期5s内 ：立即触发一次，当前时间开始计算下次触发时间；
+                                    // 2.2、过期5s内 ：立即触发一次，当前时间开始计算下次触发时间；
 
                                     CronExpression cronExpression = new CronExpression(jobInfo.getJobCron());
                                     long nextTime = cronExpression.getNextValidTimeAfter(new Date()).getTime();
@@ -127,7 +130,7 @@ public class JobScheduleHelper {
                                     }
 
                                 } else {
-                                    // 未过期：正常触发，递增计算下次触发时间
+                                    // 2.3、未过期：正常触发，递增计算下次触发时间
 
                                     // 1、make ring second
                                     int ringSecond = (int)((jobInfo.getTriggerNextTime()/1000)%60);
@@ -169,11 +172,27 @@ public class JobScheduleHelper {
                     } finally {
 
                         // commit
-                        try {
-                            conn.commit();
-                        } catch (SQLException e) {
-                            if (!scheduleThreadToStop) {
-                                logger.error(e.getMessage(), e);
+                        if (conn != null) {
+                            try {
+                                conn.commit();
+                            } catch (SQLException e) {
+                                if (!scheduleThreadToStop) {
+                                    logger.error(e.getMessage(), e);
+                                }
+                            }
+                            try {
+                                conn.setAutoCommit(connAutoCommit);
+                            } catch (SQLException e) {
+                                if (!scheduleThreadToStop) {
+                                    logger.error(e.getMessage(), e);
+                                }
+                            }
+                            try {
+                                conn.close();
+                            } catch (SQLException e) {
+                                if (!scheduleThreadToStop) {
+                                    logger.error(e.getMessage(), e);
+                                }
                             }
                         }
 
@@ -194,9 +213,8 @@ public class JobScheduleHelper {
                     // Wait seconds, align second
                     if (cost < 1000) {  // scan-overtime, not wait
                         try {
-                            // pre-read success, exist job in pre-read period, wait 1s;
-                            // pre-read fail, no exist job in pre-read period, wait 4s
-                            TimeUnit.MILLISECONDS.sleep((preReadSuc?1000:4000) - System.currentTimeMillis()%1000);
+                            // pre-read period: success > scan each second; fail > skip this period;
+                            TimeUnit.MILLISECONDS.sleep((preReadSuc?1000:PRE_READ_MS) - System.currentTimeMillis()%1000);
                         } catch (InterruptedException e) {
                             if (!scheduleThreadToStop) {
                                 logger.error(e.getMessage(), e);
@@ -205,12 +223,7 @@ public class JobScheduleHelper {
                     }
 
                 }
-                if (conn != null) {
-                    try {
-                        conn.close();
-                    } catch (SQLException e) {
-                    }
-                }
+
                 logger.info(">>>>>>>>>>> xxl-job, JobScheduleHelper#scheduleThread stop");
             }
         });
@@ -278,25 +291,6 @@ public class JobScheduleHelper {
         ringThread.setDaemon(true);
         ringThread.setName("xxl-job, admin JobScheduleHelper#ringThread");
         ringThread.start();
-    }
-
-    /**
-     *
-     * @param jobId 任务ID
-     * @param upStreams 上游任务ID列表
-     * @param triggerType 调度方式
-     */
-    private void waitDagUp(int jobId,List<Integer> upStreams, TriggerTypeEnum triggerType){
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-
-            }
-        };
-        Thread waitDagThead = new Thread(runnable);
-        waitDagThead.setDaemon(true);
-        waitDagThead.setName("jobId:"+jobId+",wait dag upStream");
-        waitDagThead.start();
     }
 
     private void pushTimeRing(int ringSecond, int jobId){

@@ -5,6 +5,8 @@ import com.xxl.job.admin.core.exception.XxlJobException;
 import com.xxl.job.admin.core.model.XxlJobGroup;
 import com.xxl.job.admin.core.model.XxlJobInfo;
 import com.xxl.job.admin.core.model.XxlJobLog;
+import com.xxl.job.admin.core.thread.JobTriggerPoolHelper;
+import com.xxl.job.admin.core.trigger.TriggerTypeEnum;
 import com.xxl.job.admin.core.util.I18nUtil;
 import com.xxl.job.admin.dao.XxlJobGroupDao;
 import com.xxl.job.admin.dao.XxlJobInfoDao;
@@ -167,34 +169,36 @@ public class JobLogController {
 			return new ReturnT<String>(500, I18nUtil.getString("joblog_kill_log_limit"));
 		}
 
+		//kill任务前设置重试次数为0
+		log.setExecutorFailRetryCount(0);
+		xxlJobLogDao.updateTriggerInfo(log);
+
 		// request of kill
 		ReturnT<String> runResult = null;
 		try {
-			ExecutorBiz executorBiz = XxlJobScheduler.getExecutorBiz(log.getExecutorAddress());
-			runResult = executorBiz.kill(jobInfo.getId());
+		    if(log.getTriggerCode()!=ReturnT.INIT_CODE){
+			    ExecutorBiz executorBiz = XxlJobScheduler.getExecutorBiz(log.getExecutorAddress());
+			    runResult = executorBiz.kill(jobInfo.getId());
+            }
 		} catch (Exception e) {
-			if(log.getTriggerCode()!=0){
-				logger.error(e.getMessage(), e);
-				runResult = new ReturnT<String>(500, e.getMessage());
-			}
+			logger.error(e.getMessage(), e);
+			runResult = new ReturnT<String>(ReturnT.FAIL_CODE, e.getMessage());
 		}
 
 		if (ReturnT.INIT_CODE == log.getTriggerCode() || ReturnT.SUCCESS_CODE == runResult.getCode()) {
 
 			String msg = "";
-
-			log.setExecutorFailRetryCount(0);
-			log.setHandleCode(ReturnT.FAIL_CODE);
 			if(ReturnT.INIT_CODE == log.getTriggerCode()){
-				log.setTriggerCode(ReturnT.SUCCESS_CODE);
-				log.setHandleMsg( I18nUtil.getString("joblog_kill_log_byman_wait_up_stream_job"));
+				log.setTriggerCode(ReturnT.FAIL_CODE);
 				xxlJobLogDao.updateTriggerInfo(log);
 			}else{
 				msg = runResult.getMsg();
+                log.setHandleCode(ReturnT.FAIL_CODE);
+				log.setHandleTime(new Date());
 				log.setHandleMsg( I18nUtil.getString("joblog_kill_log_byman")+":" + (msg!=null?msg:""));
+				xxlJobLogDao.updateHandleInfo(log);
 			}
-			log.setHandleTime(new Date());
-			xxlJobLogDao.updateHandleInfo(log);
+
 			return new ReturnT<String>(msg);
 		} else {
 			return new ReturnT<String>(500, runResult.getMsg());
@@ -231,6 +235,16 @@ public class JobLogController {
 
 		xxlJobLogDao.clearLog(jobGroup, jobId, clearBeforeTime, clearBeforeNum);
 		return ReturnT.SUCCESS;
+	}
+
+	@RequestMapping("/reRun")
+	@ResponseBody
+	public ReturnT<String> reRun(int id){
+
+		XxlJobLog log = xxlJobLogDao.load(id);
+		JobTriggerPoolHelper.trigger(log.getJobId(), TriggerTypeEnum.CRON, 0, null, log.getExecutorParam());
+		return ReturnT.SUCCESS;
+
 	}
 
 }

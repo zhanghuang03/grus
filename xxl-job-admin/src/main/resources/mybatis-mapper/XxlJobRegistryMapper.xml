@@ -24,6 +24,12 @@
 		FROM xxl_job_registry AS t
 		WHERE t.update_time <![CDATA[ < ]]> DATE_ADD(NOW(),INTERVAL -#{timeout} SECOND)
 	</select>
+
+	<select id="findAllOfDead" parameterType="java.lang.Integer" resultMap="XxlJobRegistry">
+		SELECT <include refid="Base_Column_List" />
+		FROM xxl_job_registry AS t
+		WHERE t.update_time <![CDATA[ < ]]> DATE_ADD(NOW(),INTERVAL -#{timeout} SECOND)
+	</select>
 	
 	<delete id="removeDead" parameterType="java.lang.Integer" >
 		DELETE FROM xxl_job_registry

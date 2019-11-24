@@ -115,6 +115,11 @@ public class XxlJobTrigger {
         String[] upStreamJobList = {};
         // 等待上游任务
         if (triggerType==TriggerTypeEnum.CRON){
+
+            jobLog.setExecutorFailRetryCount(finalFailRetryCount);
+            jobLog.setTriggerMsg(I18nUtil.getString("jobconf_trigger_type")+"："+triggerType.getTitle());
+            XxlJobAdminConfig.getAdminConfig().getXxlJobLogDao().updateTriggerInfo(jobLog);
+
             while (true){
 
                 //获取每个任务最后一次运行状态为成功的上游任务
@@ -128,17 +133,20 @@ public class XxlJobTrigger {
                     }
                 }
 
-                int handleCoded = XxlJobAdminConfig.getAdminConfig().getXxlJobLogDao().load(jobLog.getId()).getHandleCode();
+                XxlJobLog currentJobLog = XxlJobAdminConfig.getAdminConfig().getXxlJobLogDao().load(jobLog.getId());
 
-                if(handleCoded == ReturnT.FAIL_CODE){
+                int handleCoded = currentJobLog.getHandleCode();
+                int triggerCode = currentJobLog.getTriggerCode();
+
+                if(handleCoded == ReturnT.FAIL_CODE || triggerCode==ReturnT.FAIL_CODE){
                     isContinueRun = false;
                 }
 
-                if(upStreamJobList.length == finishUpStreamJobList.size() || handleCoded == ReturnT.FAIL_CODE || jobInfo.getUpStreamJobList().trim().length() == 0){
+                if(upStreamJobList.length == finishUpStreamJobList.size() || handleCoded == ReturnT.FAIL_CODE || triggerCode==ReturnT.FAIL_CODE || jobInfo.getUpStreamJobList().trim().length() == 0){
                     break;
                 }
 
-                logger.info(">>>>>>>>>>> xxl-job wait up stream job, jobId:{},up stream job id list:"+jobInfo.getUpStreamJobList(), jobLog.getId());
+                logger.info(">>>>>>>>>>> xxl-job wait up stream job, log id:{},up stream jobid list:"+jobInfo.getUpStreamJobList(), jobLog.getId());
                 try {
                     TimeUnit.SECONDS.sleep(5);
                 } catch (InterruptedException e) {
@@ -199,6 +207,8 @@ public class XxlJobTrigger {
             runResultSB.append("<br>code：").append(ReturnT.SUCCESS);
             runResultSB.append("<br>msg：").append(I18nUtil.getString("joblog_kill_log_byman_wait_up_stream_job"));
             triggerResult.setMsg(runResultSB.toString());
+            finalFailRetryCount=0;
+            triggerResult.setCode(ReturnT.FAIL_CODE);
         }
 
 

@@ -30,4 +30,5 @@ public interface XxlJobRegistryDao {
                           @Param("registryKey") String registryKey,
                           @Param("registryValue") String registryValue);
 
+    public List<XxlJobRegistry> findAllOfDead(@Param("timeout") int timeout);
 }

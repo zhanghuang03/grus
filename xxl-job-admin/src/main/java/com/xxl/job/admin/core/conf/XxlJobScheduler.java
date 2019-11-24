@@ -41,6 +41,10 @@ public class XxlJobScheduler implements InitializingBean, DisposableBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
+
+        //set the status to fail of previous wait run jobs
+        updatePreviousJobStatus();
+
         // init i18n
         initI18n();
 
@@ -76,6 +80,13 @@ public class XxlJobScheduler implements InitializingBean, DisposableBean {
 
         // admin-server
         stopRpcProvider();
+    }
+
+    // ---------------------- set the status to fail of previous wait run jobs  ----------------------
+
+    private void updatePreviousJobStatus() {
+        XxlJobAdminConfig.getAdminConfig().getXxlJobLogDao().setWaitingJobStatusToFail("<br>fail reasons: "+I18nUtil.getString("admin_name") + I18nUtil.getString("system_restart"));
+        logger.info(">>>>>>>>> init xxl-job set the status to fail of previous wait jobs.");
     }
 
     // ---------------------- I18n ----------------------

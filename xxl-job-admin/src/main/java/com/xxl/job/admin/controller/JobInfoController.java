@@ -141,13 +141,21 @@ public class JobInfoController {
 	@RequestMapping("/trigger")
 	@ResponseBody
 	//@PermissionLimit(limit = false)
-	public ReturnT<String> triggerJob(int id, String executorParam) {
+	public ReturnT<String> triggerJob(int id, String executorParam,int taskDependent) {
 		// force cover job param
 		if (executorParam == null) {
 			executorParam = "";
 		}
 
-		JobTriggerPoolHelper.trigger(id, TriggerTypeEnum.MANUAL, -1, null, executorParam);
+		//是否使用任务依赖
+		TriggerTypeEnum triggerTypeEnum = null;
+		if(taskDependent==1){
+			triggerTypeEnum = TriggerTypeEnum.CRON;
+		}else{
+			triggerTypeEnum = TriggerTypeEnum.MANUAL;
+		}
+
+		JobTriggerPoolHelper.trigger(id, triggerTypeEnum, -1, null, executorParam);
 		return ReturnT.SUCCESS;
 	}
 

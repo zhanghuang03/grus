@@ -23,6 +23,7 @@ public class ExecutorRegistryThread {
 
     private Thread registryThread;
     private volatile boolean toStop = false;
+    private volatile boolean isUpdateBeforeJobStatus = false;
     public void start(final String appName, final String address){
 
         // valid
@@ -46,6 +47,13 @@ public class ExecutorRegistryThread {
                         for (AdminBiz adminBiz: XxlJobExecutor.getAdminBizList()) {
                             try {
                                 ReturnT<String> registryResult = adminBiz.registry(registryParam);
+
+                                while (!isUpdateBeforeJobStatus){
+                                    logger.info(">>>>>>>>>>> xxl-job set the status to fail of previous running jobs, registryParam:{}, registryResult:{}", new Object[]{registryParam, registryResult});
+                                    adminBiz.updatePreviousJobStatus(registryParam,2);
+                                    isUpdateBeforeJobStatus = true;
+                                }
+
                                 if (registryResult!=null && ReturnT.SUCCESS_CODE == registryResult.getCode()) {
                                     registryResult = ReturnT.SUCCESS;
                                     logger.debug(">>>>>>>>>>> xxl-job registry success, registryParam:{}, registryResult:{}", new Object[]{registryParam, registryResult});

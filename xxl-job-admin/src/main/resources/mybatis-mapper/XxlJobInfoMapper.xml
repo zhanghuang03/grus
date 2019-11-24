@@ -250,4 +250,10 @@
 		WHERE id = #{id}
 	</update>
 
+	<select id="findCountByUpStreamJobList" resultType="int">
+		SELECT count(1)
+		FROM xxl_job_info AS t
+		WHERE FIND_IN_SET(#{id},t.up_stream_job_list)
+	</select>
+
 </mapper>

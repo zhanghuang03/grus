@@ -256,6 +256,7 @@ $(function() {
 
         $("#jobTriggerModal .form input[name='id']").val( row.id );
         $("#jobTriggerModal .form textarea[name='executorParam']").val( row.executorParam );
+        $("#jobTriggerModal .form input[name='taskDependent']:first").attr("checked","checked");
 
         $('#jobTriggerModal').modal({backdrop: false, keyboard: false}).modal('show');
     });
@@ -265,7 +266,8 @@ $(function() {
             url : base_url + "/jobinfo/trigger",
             data : {
                 "id" : $("#jobTriggerModal .form input[name='id']").val(),
-                "executorParam" : $("#jobTriggerModal .textarea[name='executorParam']").val()
+                "executorParam" : $("#jobTriggerModal .textarea[name='executorParam']").val(),
+				"taskDependent":$("#jobTriggerModal .form input[name='taskDependent']:checked").val(),
             },
             dataType : "json",
             success : function(data){
@@ -737,4 +739,46 @@ $(function() {
         window.open(url, "newWindow"+Math.random(), "height=" + iHeight + ",width=" + iWidth + ",top="+iTop+",left="+iLeft+",toolbar=no,menubar=no,scrollbars=yes, resizable=no,location=no, status=no");
 
     });
+
+    //查找url参数
+    function getQueryVariable(variable){
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+            if(pair[0] == variable){return pair[1];}
+        }
+        return '';
+    }
+
+    //GET方式查找任务
+    var jobName = getQueryVariable("jobName");
+    var jobId = getQueryVariable("jobId");
+    if(jobName!='' && jobId!=''){
+		$("#jobName").val(jobName);
+
+        $("#job_list").on("mousemove",function () {
+        	var isUnbind = false;
+            $("#job_list").find("tr").each(function () {
+                var td = $(this).children('td:eq(0)');
+                var chooseJobId = td.text();
+
+                if(jobId==chooseJobId){
+					var tr = td.parent();
+                    tr.css("background","#fbf63666");
+                    $("html,body").animate({scrollTop: td.offset().top}, 500);
+                    isUnbind = true;
+                }
+            });
+            if(isUnbind){
+            	$("#job_list").unbind("mousemove");
+            }
+        });
+
+        var promise = new Promise(function () {
+            $("select[name='job_list_length'] option[value='100']").prop("selected",true);
+            $("select[name='job_list_length'] option[value='100']").trigger('change');
+        });
+
+    }
 });

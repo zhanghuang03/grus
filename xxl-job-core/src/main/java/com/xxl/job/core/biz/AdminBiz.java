@@ -43,4 +43,6 @@ public interface AdminBiz {
      */
     public ReturnT<String> registryRemove(RegistryParam registryParam);
 
+    // ---------------------- update previous job stauts----------------------
+    public ReturnT<String> updatePreviousJobStatus(RegistryParam registryParam,int flag);
 }

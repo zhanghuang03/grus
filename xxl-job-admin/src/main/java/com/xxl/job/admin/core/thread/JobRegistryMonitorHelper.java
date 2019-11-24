@@ -3,14 +3,12 @@ package com.xxl.job.admin.core.thread;
 import com.xxl.job.admin.core.conf.XxlJobAdminConfig;
 import com.xxl.job.admin.core.model.XxlJobGroup;
 import com.xxl.job.admin.core.model.XxlJobRegistry;
+import com.xxl.job.admin.core.util.I18nUtil;
 import com.xxl.job.core.enums.RegistryConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -38,8 +36,17 @@ public class JobRegistryMonitorHelper {
 						if (groupList!=null && !groupList.isEmpty()) {
 
 							// remove dead address (admin/executor)
-							List<Integer> ids = XxlJobAdminConfig.getAdminConfig().getXxlJobRegistryDao().findDead(RegistryConfig.DEAD_TIMEOUT);
-							if (ids!=null && ids.size()>0) {
+							List<XxlJobRegistry> jobRegistryList = XxlJobAdminConfig.getAdminConfig().getXxlJobRegistryDao().findAllOfDead(RegistryConfig.DEAD_TIMEOUT);
+
+							List<Integer> ids = new ArrayList<Integer>();
+							if (jobRegistryList!=null && jobRegistryList.size()>0) {
+								for(XxlJobRegistry jobRegistry : jobRegistryList){
+									ids.add(jobRegistry.getId());
+									//set the status to fail of running jobs
+									XxlJobAdminConfig.getAdminConfig().getXxlJobLogDao().setRunningJobStatusToFail(I18nUtil.getString("jobinfo_field_jobgroup") + I18nUtil.getString("system_shutdown"),jobRegistry.getRegistryValue(),new Date());
+								}
+								logger.info(">>>>>>>>>>> xxl-job, set the status to fail of running jobs when executor dead");
+
 								XxlJobAdminConfig.getAdminConfig().getXxlJobRegistryDao().removeDead(ids);
 							}
 

@@ -4,7 +4,7 @@
 <#import "../common/common.macro.ftl" as netCommon>
 <@netCommon.commonStyle />
 
-<title>当日任务最后一次运行的状态</title>
+<title>${I18n.system_dag_page_tile}</title>
 <script src="${request.contextPath}/static/adminlte/bower_components/jquery/jquery.min.js"></script>
 <link rel="stylesheet" href="${request.contextPath}/static/adminlte/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
 <link rel="stylesheet" href="${request.contextPath}/static/plugins/d3/graph.css">
@@ -41,10 +41,15 @@
 
  <svg id="svgCanvas" width=100% height=100% ></svg>
 
-<ul id="myMenu" class="dropdown-menu" role="menu" _id="82">
+<ul id="myMenu" class="dropdown-menu" role="menu">
     <li><a id="jobLog" href="#" target="_blank">${I18n.jobinfo_opt_log}</a></li>
     <li class="divider"></li>
+    <li><a id="searchJobName" href="#" target="_blank">${I18n.system_show}${I18n.jobinfo_job}</a></li>
+    <li class="divider"></li>
     <li><a id="jobCode" href="#" target="_blank">GLUE IDE</a></li>
+    <li class="divider"></li>
+    <li><a id="copyJobName">${I18n.system_copy}${I18n.jobinfo_field_jobname}</a></li>
+
 </ul>
 
 <script>
@@ -90,28 +95,41 @@
 
     function changeMeun(jobId){
         $("#jobLog").attr("href","${request.contextPath}/joblog?jobId="+jobId);
-        $("#jobCode").attr("href","${request.contextPath}/joblog?jobId="+jobId);
+        $("#jobCode").attr("href","${request.contextPath}/jobcode?jobId="+jobId);
+
+        var jobName = $("g[id='"+jobId+"'").text();
+        $("#searchJobName").attr("href","${request.contextPath}/jobinfo?jobId="+jobId+"&jobName="+jobName);
     }
 
     var myMenu = document.getElementById("myMenu"); //鼠标右键
     svgCanvas.addEventListener("contextmenu", (event) => { //鼠标右击事件
         event.preventDefault();
-    diagGraph.changePoint(event.target.parentNode.id);
+        diagGraph.changePoint(event.target.parentNode.id);
 
-    if (event.target.tagName === 'rect') {
-        myMenu.style.top = event.clientY + "px";
-        myMenu.style.left = event.clientX + "px";
-        myMenu.style.display = 'block';
+        if (event.target.tagName === 'rect') {
+            myMenu.style.top = event.clientY + "px";
+            myMenu.style.left = event.clientX + "px";
+            myMenu.style.display = 'block';
 
-        var node_id = event.path[1].id;
-        changeMeun(node_id);
-        console.log("jobId:"+node_id);
-    }
+            var job_id = event.path[1].id;
+            myMenu.setAttribute("_id",job_id);
+            changeMeun(job_id);
+            console.log("jobId:"+job_id);
+        }
     });
-
 
     document.addEventListener("click", function(event){
         myMenu.style.display = 'none'
+    });
+
+    $("#copyJobName").click(function(){
+        var job_id = $(this).parent().parent().attr("_id");
+        var jobName = $("g[id='"+job_id+"'").text();
+        var oInput = document.createElement("input");
+        oInput.value = jobName;
+        document.body.appendChild(oInput);
+        oInput.select();
+        document.execCommand("Copy");
     });
 
 </script>

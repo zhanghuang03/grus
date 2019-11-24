@@ -196,12 +196,16 @@ $(function() {
 	                	"render": function ( data, type, row ) {
 	                		// better support expression or string, not function
                             var temp = "";
+                            var triggerMsg = row.triggerMsg == null ? "" : row.triggerMsg;
 	                		return function () {
                                 if (row.triggerCode == 200 || row.handleCode != 0){
 		                			temp += '<a href="javascript:;" class="logDetail" _id="'+ row.id +'">'+ I18n.joblog_rolling_log +'</a>';
 		                		}
                                 if( (row.triggerCode == 200 || row.triggerCode == 0) && row.handleCode == 0){
                                     temp += '<br><a href="javascript:;" class="logKill" _id="'+ row.id +'" style="color: red;" >'+ I18n.joblog_kill_log +'</a>';
+                                }
+                                if( (row.triggerCode == 500 || row.handleCode == 500) && triggerMsg.indexOf(I18n.jobconf_trigger_type_cron)!=-1){
+                                    temp += '<br><a href="javascript:;" class="reRun" _id="'+ row.id +'" style="color: blue;" >'+ I18n.joblog_rerun_log +'</a>';
                                 }
                                 return temp;
 	                		}
@@ -300,6 +304,49 @@ $(function() {
         });
 
 	});
+
+    /**
+     * re run
+     */
+    $('#joblog_list').on('click', '.reRun', function(){
+        var _id = $(this).attr('_id');
+
+        layer.confirm( (I18n.system_ok + I18n.joblog_rerun_log + '?'), {
+            icon: 3,
+            title: I18n.system_tips ,
+            btn: [ I18n.system_ok, I18n.system_cancel ]
+        }, function(index){
+            layer.close(index);
+
+            $.ajax({
+                type : 'POST',
+                url : base_url + '/joblog/reRun',
+                data : {"id":_id},
+                dataType : "json",
+                success : function(data){
+                    if (data.code == 200) {
+                        layer.open({
+                            title: I18n.system_tips,
+                            btn: [ I18n.system_ok ],
+                            content: I18n.system_opt_suc ,
+                            icon: '1',
+                            end: function(layero, index){
+                                logTable.fnDraw();
+                            }
+                        });
+                    } else {
+                        layer.open({
+                            title: I18n.system_tips,
+                            btn: [ I18n.system_ok ],
+                            content: (data.msg || I18n.system_opt_fail ),
+                            icon: '2'
+                        });
+                    }
+                },
+            });
+        });
+
+    });
 
 	/**
 	 * clear Log

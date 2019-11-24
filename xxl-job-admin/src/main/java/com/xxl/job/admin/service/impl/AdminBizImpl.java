@@ -132,7 +132,21 @@ public class AdminBizImpl implements AdminBiz {
 
     @Override
     public ReturnT<String> registryRemove(RegistryParam registryParam) {
+        updatePreviousJobStatus(registryParam,1);
         xxlJobRegistryDao.registryDelete(registryParam.getRegistGroup(), registryParam.getRegistryKey(), registryParam.getRegistryValue());
+        return ReturnT.SUCCESS;
+    }
+
+    @Override
+    public ReturnT<String> updatePreviousJobStatus(RegistryParam registryParam,int flag) {
+        String handleMsg = I18nUtil.getString("jobinfo_field_jobgroup");
+        if(flag==1){
+            handleMsg += I18nUtil.getString("system_shutdown");
+        }else if(flag==2){
+            handleMsg += I18nUtil.getString("system_restart");
+        }
+
+        xxlJobLogDao.setRunningJobStatusToFail(handleMsg,registryParam.getRegistryValue(),new Date());
         return ReturnT.SUCCESS;
     }
 

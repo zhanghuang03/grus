@@ -64,6 +64,7 @@ public interface XxlJobLogDao {
 
 	public List<XxlJobLnLog> loadLastStatus(@Param("jobId") String jobId,@Param("triggerTimeStart") Date triggerTimeStart,@Param("triggerTimeEnd") Date triggerTimeEnd);
 
+	public int setRunningJobStatusToFail(@Param("handleMsg") String handleMsg,@Param("executorAddress") String executorAddress,@Param("handleTime") Date handleTime);
 
-
+	public int setWaitingJobStatusToFail(@Param("triggerMsg") String triggerMsg);
 }

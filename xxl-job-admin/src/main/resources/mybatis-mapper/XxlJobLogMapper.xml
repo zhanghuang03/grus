@@ -136,10 +136,17 @@
 
 	<select id="pageLastList" resultMap="XxlJobLog">
 		SELECT <include refid="Base_Column_List" />
-		FROM xxl_job_log AS t left join xxl_job_info u on t.job_id = u.id
-		WHERE t.job_id in(#{jobId})
-		AND t.trigger_time <![CDATA[ >= ]]> #{triggerTimeStart}
-		AND t.trigger_time <![CDATA[ <= ]]> #{triggerTimeEnd}
+		FROM
+		(
+		SELECT job_id,max(id) id
+		FROM xxl_job_log
+		WHERE job_id IN (${jobId})
+		AND trigger_time <![CDATA[ >= ]]> #{triggerTimeStart}
+		AND trigger_time <![CDATA[ <= ]]> #{triggerTimeEnd}
+		GROUP BY job_id
+		) s
+		left join xxl_job_log t on s.id = t.id
+		left join xxl_job_info u on s.job_id=u.id
 	</select>
 
 	<select id="loadLastStatus" resultType="com.xxl.job.admin.core.model.XxlJobLnLog">
@@ -150,14 +157,14 @@
 			CAST(t.handle_code AS char) AS handleCode,
 			s.job_name AS jobName,
 			s.up_stream_job_list AS upStreamJobList
-		FROM (SELECT id AS job_id,job_name,up_stream_job_list FROM xxl_job_info WHERE id IN (#{jobId}) ) s
+		FROM (SELECT id AS job_id,job_name,up_stream_job_list FROM xxl_job_info WHERE id IN (${jobId}) ) s
 		LEFT JOIN
 		(
 			SELECT
 				n1.id AS job_id,
 				max(n2.id) AS id
 			FROM xxl_job_info n1 LEFT JOIN xxl_job_log n2 ON n1.id = n2.job_id
-			WHERE n1.id IN (#{jobId})
+			WHERE n1.id IN (${jobId})
 			AND n2.trigger_time <![CDATA[ >= ]]> #{triggerTimeStart}
 			AND n2.trigger_time <![CDATA[ <= ]]> #{triggerTimeEnd}
 			GROUP BY n1.id
@@ -283,5 +290,24 @@
 			`alarm_status` = #{newAlarmStatus}
 		WHERE `id`= #{logId} AND `alarm_status` = #{oldAlarmStatus}
 	</update>
+
+	<delete id="setRunningJobStatusToFail" >
+		UPDATE xxl_job_log
+		SET
+			`handle_code` = 500 , `handle_msg`= #{handleMsg} , `handle_time`= #{handleTime}
+		WHERE
+				`trigger_code` = 200
+				AND `handle_code` = 0
+				AND `executor_address` = #{executorAddress}
+	</delete>
+
+	<delete id="setWaitingJobStatusToFail" >
+		UPDATE xxl_job_log
+		SET
+			`trigger_code` = 500 , `trigger_msg`= concat(ifnull(trigger_msg,''),#{triggerMsg})
+		WHERE
+				`trigger_code` = 0
+				AND `handle_code` = 0
+	</delete>
 
 </mapper>

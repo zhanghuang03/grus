@@ -310,6 +310,11 @@ public class XxlJobServiceImpl implements XxlJobService {
 			return ReturnT.SUCCESS;
 		}
 
+		int useJobs = xxlJobInfoDao.findCountByUpStreamJobList(id);
+		if(useJobs>0){
+			return new ReturnT<String>(ReturnT.FAIL_CODE, I18nUtil.getString("system_task_be_dependent_on")+","+I18nUtil.getString("system_opt_del")+I18nUtil.getString("system_fail"));
+		}
+
 		xxlJobInfoDao.delete(id);
 		xxlJobLogDao.delete(id);
 		xxlJobLogGlueDao.deleteByJobId(id);

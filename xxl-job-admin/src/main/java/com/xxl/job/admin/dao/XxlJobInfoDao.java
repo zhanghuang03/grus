@@ -49,5 +49,6 @@ public interface XxlJobInfoDao {
 
 	public int scheduleUpdate(XxlJobInfo xxlJobInfo);
 
+	public int findCountByUpStreamJobList(@Param("id") long id);
 
 }

@@ -30,7 +30,7 @@
 	              	<div class="input-group">
 	                	<span class="input-group-addon">${I18n.jobinfo_field_jobgroup}</span>
                 		<select class="form-control" id="jobGroup" >
-                            <option value="0" <#if jobGroup==0>selected</#if> >${I18n.jobinfo_field_all_jobgroup}</option>
+                            <option value="0">${I18n.jobinfo_field_all_jobgroup}</option>
                 			<#list JobGroupList as group>
                 				<option value="${group.id}" <#if jobGroup==group.id>selected</#if> >${group.title}</option>
                 			</#list>
@@ -474,6 +474,13 @@ exit 0
                         <label for="firstname" class="col-sm-2 control-label">${I18n.jobinfo_field_executorparam}<font color="black">*</font></label>
                         <div class="col-sm-10">
                             <textarea class="textarea form-control" name="executorParam" placeholder="${I18n.system_please_input}${I18n.jobinfo_field_executorparam}" maxlength="512" style="height: 63px; line-height: 1.2;"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname" class="col-sm-2">${I18n.system_task_dependent}</label>
+                        <div class="col-sm-4">
+                            <label><input type="radio" name="taskDependent" value="0">${I18n.system_disable}</label>
+                            <label><input type="radio" name="taskDependent" value="1">${I18n.system_enable}</label>
                         </div>
                     </div>
                     <hr>

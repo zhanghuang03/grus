@@ -44,6 +44,7 @@ Now, it's already open source, and many companies use it in production environme
 ##### 查看任务DAG
 ![查看任务DAG-1](https://raw.githubusercontent.com/wiki/zhanghuang03/grus/images/查看任务DAG-1.png "查看任务DAG-1")
 ![查看任务DAG-2](https://raw.githubusercontent.com/wiki/zhanghuang03/grus/images/查看任务DAG-2.png "查看任务DAG-2")
+![查看任务DAG-3](https://raw.githubusercontent.com/wiki/zhanghuang03/grus/images/查看任务DAG-3.png "查看任务DAG-3")
 
 ##### 调度日志列表
 新增“待运行”状态，当任务添加上游任务依赖后，本任务等所依赖的任务当日最后一次运行的状态为“成功”后才会开始运行，如果上游任务经重试后还是失败，需手动执行至成功后本任务才会继续运行。
@@ -53,10 +54,45 @@ Now, it's already open source, and many companies use it in production environme
 位置为:<a href="https://github.com/zhanghuang03/grus/blob/master/doc/db/tables_xxl_job.sql" target="_blank">/grus/doc/db/tables_xxl_job.sql</a>
 
 #### TODO LIST
-    （1）被依赖中的任务不能删除
-    
-    （2）增加“重跑功能”，以便非Cron方式触发的任务也可以使任务依赖生效。
-    
-    （3）增加检测执行器上任务存活机制，在执行器down掉重启后，调度中心对其任务状态做出修改。
-    
-    （4）修复调度日志太大时无法查看：使用分页方式查看。
+
+    - 修复调度日志太大时无法查看：使用分页方式查看
+	
+	- 支持批量管理任务(启动调度、停止调度、执行任务、终止任务)
+	
+	- 增加任务标签，可通过标签批量管理任务
+
+	- 修改任务调度是否使用任务依赖的标识，将不使用CRON调度标识
+
+	- 增加资源仪表盘，可查看调度中心、执行器所在的服务器的资源使用情况
+
+
+#### 版本更新日志
+
+
+
+
+#####  (2019-11-24)版本 GRUS-1.2
+
+###### 新特性:
+	- 被依赖中的任务不能删除
+
+	- 手动执行任务时提供是否使用“任务依赖”选项
+
+	- 对Cron触发的任务调度、手动执行时启用任务依赖的任务调度，在运行失败后提供“重跑”按钮
+
+	- 执行器失去联系、关闭、重启后，相应执行器上的“进行中”的任务调度状态设置为“失败”
+
+	- 任务调度中心重启后，“待运行”的任务调度状态设置为“失败”
+
+	- 查看任务DAG里新增右键菜单“查看任务”、“复制任务名”
+
+	- [from xxl-job]DB重连优化，修复DB宕机重连后任务调度停止的问题，重连后自动加入调度集群触发任务调度;
+
+###### 修复BUG:
+	- 终止“待运行”的任务调度时仍重试
+
+	- 任务依赖偶尔不能精准监控上游任务当日最后一次运行的状态
+
+	- 任务重试时参数丢失
+
+	- 使用任务依赖的任务调度重试时任务依赖不生效
